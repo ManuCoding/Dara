@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en" style="height:100%;">
+	<head>
+		<title>Image Grid</title>
+		
+		<meta charset="UTF-8"></meta>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+		
+		<link rel="stylesheet" href="resources/w3.css"></link>
+		<link rel="stylesheet" href="resources/w3-colors-flat.css"></link>
+		
+		<style>
+			@font-face {
+				font-family: DancingScript;
+				src: url(resources/dancing_script_regular.ttf);
+			}
+			
+			* {
+				box-sizing: border-box;
+			}
+			
+			body {
+				margin: 0;
+				font-family: Arial;
+			}
+			
+			.row {
+				display: -ms-flexbox; /* IE 10 */
+				display: flex;
+				-ms-flex-wrap: wrap; /* IE 10 */
+				flex-wrap: wrap;
+				padding: 0 4px;
+			}
+			
+			/* Create two equal columns that sits next to each other */
+			.column {
+				-ms-flex: 33.3%; /* IE 10 */
+				flex: 33.3%;
+				padding: 0 4px;
+			}
+			
+			.column img {
+				margin-top: 8px;
+				vertical-align: middle;
+			}
+			
+			/* Beautiful round range slider */
+			.slidecontainer {
+				width: 100%;
+			}
+			
+			.slider {
+				-webkit-appearance: none;
+				width: 50%;
+				height: 15px;
+				border-radius: 5px;
+				background: #d3d3d3;
+				outline: none;
+				opacity: 0.7;
+				-webkit-transition: .2s;
+				transition: opacity .2s;
+			}
+			
+			.slider:hover {
+				opacity: 1;
+			}
+			
+			.slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 25px;
+				height: 25px;
+				border-radius: 50%;
+				background: #16a085;
+				cursor: pointer;
+			}
+			
+			.slider::-moz-range-thumb {
+				width: 25px;
+				height: 25px;
+				border-radius: 50%;
+				background: #16a085;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	
+	<body onload="loadGallery();">
+		<header class="w3-padding-32 w3-center w3-gray">
+			<h1 class="w3-flat-turquoise w3-xxxlarge" style="width:100%;font-family: DancingScript;">Example of an image grid</h1>
+			
+			<h4>Add your own images into the folder "photos"</h4>
+			
+			<input id="divisionSlider" type="range" min="1" max="5" value="3" step="0.01" class="slider"></input>
+		</header>
+		
+		<div id="imageGrid" class="row"></div>
+	</body>
+	
+	<script>
+		let quantity = 8, path = 'photos/', divisions = 3, simple = true,
+			gallery = [], columns = [], loaded = 0;
+		
+		function loadGallery() {
+			gallery = [], loaded = 0;
+			
+			for (i = 0; i < quantity; i++) {
+				if (simple) {
+					gallery.push({elem: document.createElement('img'), id: i});
+					
+					gallery[i].elem.setAttribute('src', path + i + '.jpg');
+					gallery[i].elem.setAttribute('style', 'width:100%;');
+					
+					gallery[i].elem.addEventListener('load', function() {
+						loaded++;
+						
+						if (loaded == quantity) {
+							display();
+						}
+					});
+				} else {
+					let div = document.createElement('div');
+					
+					gallery.push({elem: div, id: i});
+					gallery[i].elem.setAttribute('class', 'w3-card w3-light-gray');
+					
+					let image = document.createElement('img');
+					image.setAttribute('src', path + i + '.jpg');
+					image.setAttribute('style', 'width:100%;');
+					
+					let text = document.createElement('h3');
+					text.setAttribute('class', 'w3-padding-small w3-center');
+					text.innerHTML = gallery[i].id;
+					
+					gallery[i].elem.appendChild(image);
+					gallery[i].elem.appendChild(text);
+					
+					image.addEventListener('load', function() {
+						loaded++;
+						
+						if (loaded == quantity) {
+							display();
+						}
+					});
+				}
+			}
+		}
+		
+		function display() {
+			columns = [];
+			
+			for (d = 0; d < divisions; d++) {
+				columns.push({photos: [], elem: document.createElement('div'), height: 0});
+				
+				columns[d].elem.setAttribute('class', 'column');
+				columns[d].elem.style.flex = (100 / divisions).toFixed(1) + '%';
+				
+				document.getElementById('imageGrid').appendChild(columns[d].elem);
+			}
+			
+			for (qty = 0; qty < quantity; qty++) {
+				let smallestColumn = 0,
+					photo = gallery.splice(random(0, gallery.length - 1), 1)[0];
+				
+				for (let c = 1; c < columns.length; c++) {
+					if (columns[c].height < columns[smallestColumn].height) {
+						smallestColumn = c;
+					}
+				}
+				
+				addImage(smallestColumn, photo);
+			}
+		}
+		
+		function addImage(column, photo) {
+			columns[column].photos.push(photo.elem);
+			
+			let current = columns[column].photos.length - 1;
+			
+			columns[column].elem.appendChild(columns[column].photos[current]);
+			
+			columns[column].height += photo.elem.offsetHeight;
+			
+			if (isVisible(columns[column].photos[current])) {
+				columns[column].photos[current].setAttribute('class', 'w3-animate-opacity w3-animate-bottom');
+			}
+		}
+		
+		divisionSlider.addEventListener('input', function() {
+			let value = Math.round(this.value);
+			
+			if (value != divisions) {
+				divisions = value;
+				
+				deleteChilds(document.getElementById('imageGrid'));
+				
+				loadGallery();
+			}
+		});
+		
+		window.addEventListener('scroll', function() {
+			for (c = 0; c < columns.length; c++) {
+				for (p = 0; p < columns[c].photos.length; p++) {
+					if (isVisible(columns[c].photos[p])) {
+						columns[c].photos[p].setAttribute('class', 'w3-animate-bottom');
+					}
+				}
+			}
+		});
+		
+		function isVisible(el) {
+			let winScroll = document.body.scrollTop || document.documentElement.scrollTop,
+				winHeight = window.innerHeight,
+				elemTop = el.offsetTop,
+				elemHeight = el.offsetHeight;
+			
+			if (elemTop < winScroll + winHeight && elemTop + elemHeight > winScroll) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		function random(min=0,max=1,digits=0){digits=Math.pow(10,digits);min*=digits;nbr=Math.floor(Math.random()*(max*digits-min+1)+min);return nbr/digits;}
+		
+		function deleteChilds(el){while(el.firstChild){el.removeChild(el.firstChild);}}
+	</script>
+</html>
