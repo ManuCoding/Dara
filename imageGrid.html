@@ -83,6 +83,16 @@
 				background: #16a085;
 				cursor: pointer;
 			}
+			
+			/* Opacity hover effect with transition */
+			.opacityHover {
+				opacity: 0.9;
+				transition: 0.1s;
+			}
+			
+			.opacityHover:hover {
+				opacity: 1;
+			}
 		</style>
 	</head>
 	
@@ -183,7 +193,7 @@
 			columns[column].height += photo.elem.offsetHeight;
 			
 			if (isVisible(columns[column].photos[current])) {
-				columns[column].photos[current].setAttribute('class', 'w3-animate-opacity w3-animate-bottom');
+				columns[column].photos[current].setAttribute('class', 'opacityHover w3-animate-opacity w3-animate-bottom');
 			}
 		}
 		
@@ -203,7 +213,7 @@
 			for (c = 0; c < columns.length; c++) {
 				for (p = 0; p < columns[c].photos.length; p++) {
 					if (isVisible(columns[c].photos[p])) {
-						columns[c].photos[p].setAttribute('class', 'w3-animate-bottom');
+						columns[c].photos[p].setAttribute('class', 'opacityHover w3-animate-bottom');
 					}
 				}
 			}
